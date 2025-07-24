@@ -20,7 +20,7 @@ void chunkPush(ChunkList* list, void* ptr, size_t size){
     list->chunks[list->allocated].size = size;
     list->allocated++;
     
-    for(int i=list->allocated-1; i>0&&list->chunks[i].ptr<list->chunks[i-1].ptr; i--){
+    for(int i=list->allocated-1; i>0 && list->chunks[i].ptr < list->chunks[i-1].ptr; i--){
         const Chunk buffer = list->chunks[i];
         list->chunks[i] = list->chunks[i-1];
         list->chunks[i-1] = buffer;
@@ -52,6 +52,7 @@ void chunkPushnMerge(ChunkList* list, void* ptr, size_t size){
     } else chunkPush(list, ptr, size);
 }
 
+
 void chunkPop(ChunkList* list, size_t index){
     assert(index < list->allocated);
     for(size_t i=index; i<list->allocated-1; i++){
@@ -82,13 +83,15 @@ void* memalloc(size_t size){
 
         if(ichunk.size>=words){
 
-            chunkPop(&freed, i);
+            size_t tail = ichunk.size-words;
+            
+            if(tail>0){
+                freed.chunks[i].ptr+=words;
+                freed.chunks[i].size=tail;
+            }else chunkPop(&freed, i);
+
             chunkPush(&allocated, ichunk.ptr, words);
 
-            size_t tail = ichunk.size-words;
-            if(tail>0){
-                chunkPush(&freed, ichunk.ptr+words, tail);
-            }
             return ichunk.ptr;
         }
     }
