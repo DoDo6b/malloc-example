@@ -87,7 +87,7 @@ void* memalloc(size_t size){
 
             size_t tail = ichunk.size-words;
             if(tail>0){
-                chunkPushnMerge(&freed, ichunk.ptr+words, tail);
+                chunkPush(&freed, ichunk.ptr+words, tail);
             }
             return ichunk.ptr;
         }
