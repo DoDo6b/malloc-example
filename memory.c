@@ -18,17 +18,18 @@ void chunkPush(ChunkList* list, void* ptr, size_t size){
     }
     list->chunks[list->allocated].ptr = ptr;
     list->chunks[list->allocated].size = size;
-    list->allocated++;
     
-    for(int i=list->allocated-1; i>0 && list->chunks[i].ptr < list->chunks[i-1].ptr; i--){
+    for(int i=list->allocated; i>0 && list->chunks[i].ptr < list->chunks[i-1].ptr; i--){
         const Chunk buffer = list->chunks[i];
         list->chunks[i] = list->chunks[i-1];
         list->chunks[i-1] = buffer;
     }
+
+    list->allocated++;
 }
 
 
-int chunkBinSearch(const ChunkList* list, const void* ptr, int lp, int rp){
+int chunkBinSearch(const ChunkList* list, const uintptr_t* ptr, int lp, int rp){
     int mid = (lp+rp)/2;
     if(lp<=rp){
         if(list->chunks[mid].ptr==ptr) return mid;
@@ -38,12 +39,12 @@ int chunkBinSearch(const ChunkList* list, const void* ptr, int lp, int rp){
     return -1;
 }
 
-int chunkFind(const ChunkList* list, const void* ptr){
+int chunkFind(const ChunkList* list, const uintptr_t* ptr){
     return chunkBinSearch(list, ptr, 0, list->allocated-1);
 }
 
 
-void chunkPushnMerge(ChunkList* list, void* ptr, size_t size){
+void chunkPushnMerge(ChunkList* list, uintptr_t* ptr, size_t size){
     int index = chunkFind(list, ptr+size);
     if(index!=-1){
         list->chunks[index].ptr -= size;
@@ -55,10 +56,10 @@ void chunkPushnMerge(ChunkList* list, void* ptr, size_t size){
 
 void chunkPop(ChunkList* list, size_t index){
     assert(index < list->allocated);
-    for(size_t i=index; i<list->allocated-1; i++){
+    list->allocated--;
+    for(size_t i=index; i<list->allocated; i++){
         list->chunks[i] = list->chunks[i+1];
     }
-    list->allocated--;
 }
 
 
