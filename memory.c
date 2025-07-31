@@ -29,18 +29,16 @@ void chunkPush(ChunkList* list, void* ptr, size_t size){
 }
 
 
-int chunkBinSearch(const ChunkList* list, const uintptr_t* ptr, int lp, int rp){
-    int mid = (lp+rp)/2;
-    if(lp<=rp){
-        if(list->chunks[mid].ptr==ptr) return mid;
-        else if(list->chunks[mid].ptr>ptr) return chunkBinSearch(list, ptr, lp, mid);
-        else return chunkBinSearch(list, ptr, mid+1, rp);
+int chunkFind(const ChunkList* list, const uintptr_t* ptr){
+    int lp = 0;
+    int rp = list->allocated - 1;
+    while(lp<=rp){
+        int mid = (lp + rp)/2;
+        if(ptr==list->chunks[mid].ptr) return mid;
+        if(ptr<list->chunks[mid].ptr) rp = mid - 1;
+        else lp = mid + 1;
     }
     return -1;
-}
-
-int chunkFind(const ChunkList* list, const uintptr_t* ptr){
-    return chunkBinSearch(list, ptr, 0, list->allocated-1);
 }
 
 

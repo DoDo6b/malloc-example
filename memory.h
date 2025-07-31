@@ -28,7 +28,6 @@ extern ChunkList allocated;
 extern ChunkList freed;
 
 void chunkPush(ChunkList* list, void* ptr, size_t size);
-int chunkBinSearch(const ChunkList* list, const uintptr_t* ptr, int lp, int rp);
 int chunkFind(const ChunkList* list, const uintptr_t* ptr);
 void chunkPushnMerge(ChunkList* list, uintptr_t* ptr, size_t size);
 void chunkPop(ChunkList* list, size_t index);
