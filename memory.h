@@ -3,11 +3,14 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #define MEMORYCAP 65536
 #define WORDCAP (MEMORYCAP/sizeof(uintptr_t))
 #define CHUNKCAP 1024
+
+extern size_t WORDUSED;
 
 typedef struct{
     uintptr_t* ptr;
@@ -29,6 +32,7 @@ extern ChunkList freed;
 
 void chunkPush(ChunkList* list, void* ptr, size_t size);
 int chunkFind(const ChunkList* list, const uintptr_t* ptr);
+size_t chunkFindPlace(const ChunkList* list, const uintptr_t* ptr);
 void chunkPushnMerge(ChunkList* list, uintptr_t* ptr, size_t size);
 void chunkPop(ChunkList* list, size_t index);
 void chunkDump(const ChunkList* list, const char* name);

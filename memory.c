@@ -1,6 +1,7 @@
 #include "memory.h"
 
 uintptr_t memory[WORDCAP];
+size_t WORDUSED = 0;
 
 ChunkList allocated={0};
 ChunkList freed={
@@ -12,10 +13,9 @@ ChunkList freed={
 
 
 void chunkPush(ChunkList* list, void* ptr, size_t size){
-    if(list->allocated>=CHUNKCAP){
-        fprintf(stderr, "CHUNKCAP has been reached\n");
-        return;
-    }
+    assert(list->allocated<CHUNKCAP);
+    assert(size>0);
+
     list->chunks[list->allocated].ptr = ptr;
     list->chunks[list->allocated].size = size;
     
@@ -41,14 +41,37 @@ int chunkFind(const ChunkList* list, const uintptr_t* ptr){
     return -1;
 }
 
+size_t chunkFindPlace(const ChunkList* list, const uintptr_t* ptr){
+    size_t lp = 0;
+    size_t rp = list->allocated - 1;
+    if(list->chunks[rp].ptr < ptr) return list->allocated;
+    while(lp<rp){
+        size_t mid = (lp + rp)/2;
+        if(list->chunks[mid].ptr > ptr) rp = mid;
+        else lp = mid+1;
+    }
+    return rp;
+}
+
 
 void chunkPushnMerge(ChunkList* list, uintptr_t* ptr, size_t size){
-    int index = chunkFind(list, ptr+size);
-    if(index!=-1){
-        list->chunks[index].ptr -= size;
+    size_t index = chunkFindPlace(list, ptr);
 
+    bool rflag = list->chunks[index].ptr == ptr + size;
+    if(rflag){
+        list->chunks[index].ptr -= size;
         list->chunks[index].size += size;
-    } else chunkPush(list, ptr, size);
+    }
+    
+    bool lflag = index != 0 && list->chunks[index-1].ptr + list->chunks[index-1].size == ptr;
+    if(lflag){
+        if(rflag){
+            list->chunks[index-1].size += list->chunks[index].size;
+            chunkPop(list, index);
+        }else list->chunks[index-1].size += size;
+    }
+
+    if(!rflag && !lflag) chunkPush(list, ptr, size);
 }
 
 
@@ -63,9 +86,10 @@ void chunkPop(ChunkList* list, size_t index){
 
 void chunkDump(const ChunkList* list, const char* name){
     printf("%s Chunks (%zu):\n", name, list->allocated);
-    for(size_t i = 0; i < list->allocated; ++i){
-        printf("  start: %p, size: %zu word(s)\n",
-               (void*) list->chunks[i].ptr,
+    for(size_t i=0; i<list->allocated; ++i){
+        printf("  ptr: %p(%p), size: %zu word(s)\n",
+               (void*)list->chunks[i].ptr,
+               (void*)(list->chunks[i].ptr+list->chunks[i].size),
                list->chunks[i].size);
     }
     printf("%lld chunks in total\n", list->allocated);
@@ -74,24 +98,27 @@ void chunkDump(const ChunkList* list, const char* name){
 
 
 void* memalloc(size_t size){
-    const size_t words = (size + sizeof(uintptr_t) - 1) / sizeof(uintptr_t);
-    if(words==0) return NULL;
+    if(allocated.allocated < CHUNKCAP){
+        const size_t words = (size + sizeof(uintptr_t) - 1) / sizeof(uintptr_t);
+        if(words==0 || WORDUSED + words > WORDCAP) return NULL;
 
-    for(size_t i=0; i<freed.allocated; i++){
-        const Chunk ichunk = freed.chunks[i];
+        for(size_t i=0; i<freed.allocated; i++){
+            const Chunk ichunk = freed.chunks[i];
 
-        if(ichunk.size>=words){
+            if(ichunk.size>=words){
 
-            size_t tail = ichunk.size-words;
-            
-            if(tail>0){
-                freed.chunks[i].ptr+=words;
-                freed.chunks[i].size=tail;
-            }else chunkPop(&freed, i);
+                size_t tail = ichunk.size-words;
+                
+                if(tail>0){
+                    freed.chunks[i].ptr+=words;
+                    freed.chunks[i].size=tail;
+                }else chunkPop(&freed, i);
 
-            chunkPush(&allocated, ichunk.ptr, words);
+                chunkPush(&allocated, ichunk.ptr, words);
 
-            return ichunk.ptr;
+                WORDUSED+=words;
+                return ichunk.ptr;
+            }
         }
     }
     return NULL;
@@ -102,6 +129,7 @@ void memfree(void* ptr){
     if(index!=-1){
         const Chunk ichunk = allocated.chunks[index];
         chunkPop(&allocated, index);
+        WORDUSED -= ichunk.size;
         chunkPushnMerge(&freed, ichunk.ptr, ichunk.size);
     }
 }
