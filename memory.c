@@ -106,7 +106,29 @@ void chunkPop (ChunkList* list, size_t index)
 }
 
 
-void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool memDump)
+void memDump (const void* pointer, size_t words)
+{
+    const unsigned char* ptr        =   (const unsigned char*)pointer;
+    size_t               byteSize   =   words * sizeof(uintptr_t);
+
+    printf ("  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
+    printf ("  {\n    ");
+        
+    for (size_t i = 0; i < byteSize; i++)
+    {
+        printf(COLOR_BLACK "%02zx " STYLE_RESET, i);
+    }
+    printf("\n    ");
+
+    for (size_t i=0; i < byteSize; i++)
+    {
+        printf(COLOR_BCYAN "%02x " STYLE_RESET, *(ptr+i));
+    }
+        
+    printf("\n  }\n");
+}
+
+void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool bytesDump)
 {
     #ifndef NDEBUG
     
@@ -132,10 +154,7 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
     }
 
     #endif
-    
 
-    const unsigned char* ptr        =   (unsigned char*)chunk->ptr;
-    size_t               byteSize   =   chunk->size * sizeof(uintptr_t);
 
     printf
     (
@@ -145,26 +164,13 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
         chunk->size
     );
 
-    if (memDump)
+    if (bytesDump)
     {
-        printf ("  {\n    ");
-        
-        for (size_t i = 0; i < byteSize; i++)
-        {
-            printf(COLOR_BLACK "%02zx " STYLE_RESET, i);
-        }
-        printf("\n    ");
-
-        for (size_t i=0; i < byteSize; i++)
-        {
-            printf(COLOR_BCYAN "%02x " STYLE_RESET, *(ptr+i));
-        }
-        
-        printf("\n  }\n");
+        memDump (chunk->ptr, chunk->size);
     }
 }
 
-void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool memDump){
+void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump){
     #ifndef NDEBUG
 
     uint64_t errCode = chunkListVerify(list);
@@ -210,19 +216,19 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
         {
             for (size_t i = 0; i < list->allocated && i < 4; ++i)
             {
-                chunkDump (&list->chunks[i], memDump);
+                chunkDump (&list->chunks[i], bytesDump);
             }
             printf("  ...\n");
             for (size_t i = list->allocated - 4; list->allocated > 4 && i < list->allocated; ++i)
             {
-                chunkDump (&list->chunks[i], memDump);
+                chunkDump (&list->chunks[i], bytesDump);
             }
             break;
         }
     case ALL:
         for (size_t i = 0; i < list->allocated; ++i)
         {
-            chunkDump (&list->chunks[i], memDump);
+            chunkDump (&list->chunks[i], bytesDump);
         }
         break;
 
@@ -302,6 +308,7 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
             fileCalledFrom,
             lineCalledFrom
         );
+        memDump (chunk->ptr, chunk->size);
         error_accum = error_accum | ERRCODE_CH_PTRCHANGED;
     }
     if (*(chunk->ptr + chunk->size - 1) != ((uintptr_t)(chunk->ptr + chunk->size) ^ HEXSPEAK))
@@ -313,6 +320,7 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
             fileCalledFrom,
             lineCalledFrom
         );
+        memDump (chunk->ptr, chunk->size);
         error_accum = error_accum | ERRCODE_CH_SIZECHANGED;
     }
 
@@ -433,7 +441,7 @@ void* memalloc (size_t size)
 
                 chunkPush (&allocated, ichunk.ptr, words);
                 WordAlloc += words;
-                return ichunk.ptr IF_DBG(+2);
+                return ichunk.ptr IF_DBG(+1);
             }
         }
     }
@@ -442,7 +450,7 @@ void* memalloc (size_t size)
 
 void memfree (void* ptr)
 {
-    IF_DBG(ptr = (uintptr_t*)ptr - 2;)
+    IF_DBG(ptr = (uintptr_t*)ptr - 1;)
 
     int index = chunkFind (&allocated, ptr);
     if (index != -1)

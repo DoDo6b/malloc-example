@@ -45,13 +45,14 @@ void    chunkPop        (ChunkList* list, size_t index);
 int     chunkFind       (const ChunkList* list, const uintptr_t* ptr);
 size_t  chunkFindPlace  (const ChunkList* list, const uintptr_t* ptr);
 
+void memDump        (const void* pointer, size_t words);
 typedef enum{
     HIDE,
     FIRSNLAST,
     ALL,
 }ShowMode;
-void cDump          (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool memDump);
-void clDump         (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool memDump);
+void cDump          (const char* fileCalledFrom, unsigned int lineCalledFrom,                   const Chunk* chunk,                       bool bytesDump);
+void clDump         (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump);
 #define chunkDump(...)              cDump(__FILE__, __LINE__, __VA_ARGS__)
 #define chunkListDump(list, ...)    clDump(__FILE__, __LINE__, #list, list, __VA_ARGS__)
 
