@@ -1,24 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -Weffc++ -Wcast-qual -Wchar-subscripts -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security -Wmissing-declarations -Wnon-virtual-dtor -Woverloaded-virtual -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-aliasing -Wstrict-overflow -Wswitch-default -Wswitch-enum -Wunused -std=c99
 BUILD_DIR = build
-TARGET = memalloc.exe
+TARGET = memalloc
 
 SRCS = main.c memory.c
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
 all: $(TARGET)
 
-$(BUILD_DIR):
-	@if not exist "$(BUILD_DIR)" mkdir "$(BUILD_DIR)"
-
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@if exist "$(BUILD_DIR)" rd /s /q "$(BUILD_DIR)"
-	@if exist "$(TARGET)" del "$(TARGET)"
+	rm -rf $(BUILD_DIR) $(TARGET)
+
+rebuild:
+	make clean
+	make
 
 .PHONY: all clean

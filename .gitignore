@@ -1,6 +1,14 @@
+memalloc
+
+# MetaDirs
 .vscode
 .DS_Store
 build
+
+# Logs
+*.htm
+*.html
+*.log
 
 # Prerequisites
 *.d
