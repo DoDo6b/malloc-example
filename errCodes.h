@@ -12,7 +12,8 @@
 #define ERRCODE_CL_SIGN             128
 #define ERRCODE_CL_ALLOCATED        256
 #define ERRCODE_CL_CHFAILED         512
-#define ERRCODE_CL_OVERLAPING       1024
+#define ERRCODE_CL_UNSORTED         1024
+#define ERRCODE_CL_OVERLAPING       2048
 
 
 #endif

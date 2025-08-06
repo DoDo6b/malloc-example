@@ -3,7 +3,7 @@
 
 
 void overWordCap(){
-    printf("\n" COLOR_BLUE "Allocating more than WORDCAP(%lu)\n" STYLE_RESET, WORDCAP);
+    printf(COLOR_BLUE "Allocating more than WORDCAP(%lu)" STYLE_RESET "\n", WORDCAP);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -16,24 +16,24 @@ void overWordCap(){
     printf("We are almost out of memory (Word(s) used: %zu)\n", WordAlloc);
 
     void* bigptr = memalloc(MEMORYCAP);
-    printf(COLOR_YELLOW "Allocating %d byte(s)" STYLE_RESET "\npointer returned: %p\n", MEMORYCAP, bigptr);
+    printf("\n" COLOR_YELLOW "Allocating %d byte(s)" STYLE_RESET "\npointer returned: %p\n\n", MEMORYCAP, bigptr);
     assert(!bigptr);
 
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    printf("Cleanning\n");
+    printf(COLOR_GREEN "Cleanning" STYLE_RESET "\n");
     memfree(bigptr);
     memfree(ptr);
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 void overChunkCap(){
-    printf("\n" COLOR_BLUE "Allocating more than CHUNKCAP(%d)\n" STYLE_RESET, CHUNKCAP);
+    printf(COLOR_BLUE "Allocating more than CHUNKCAP(%d)" STYLE_RESET "\n", CHUNKCAP);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -43,21 +43,20 @@ void overChunkCap(){
     for(int i=0; i<CHUNKCAP; i++){
         ptrs[i] = (char*)memalloc(sizeof(char));
     }
-    printf(COLOR_YELLOW "Allocated: %zu\n" STYLE_RESET, allocated.allocated);
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
     assert(allocated.allocated==CHUNKCAP);
 
-    printf(COLOR_YELLOW "Allocating another one\n\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Allocating another one" STYLE_RESET "\n");
     char* nextptr = (char*)memalloc(sizeof(char));
-    printf("pointer returned: %p\n", nextptr);
+    printf("pointer returned: %p\n\n", nextptr);
     assert(!nextptr);
     assert(allocated.allocated==CHUNKCAP);
 
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    printf("Cleanning\n");
+    printf(COLOR_GREEN "Cleanning" STYLE_RESET "\n");
     for(int i=0; i<CHUNKCAP; i++){
         memfree(ptrs[i]);
     }
@@ -65,11 +64,11 @@ void overChunkCap(){
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 void fragmentationTest(){
-    printf("\n" COLOR_BLUE "Fragmentation test\n" STYLE_RESET);
+    printf(COLOR_BLUE "Fragmentation test" STYLE_RESET "\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -82,7 +81,7 @@ void fragmentationTest(){
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    printf(COLOR_YELLOW "Deallocating every second ptr\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Deallocating every second ptr" STYLE_RESET "\n");
     for(int i=0; i<CHUNKCAP; i+=2){
         memfree(ptrs[i]);
     }
@@ -91,7 +90,7 @@ void fragmentationTest(){
     assert(allocated.allocated == CHUNKCAP/2);
 
 
-    printf("Cleanning\n");
+    printf(COLOR_GREEN "Cleanning" STYLE_RESET "\n");
     for(int i=0; i<CHUNKCAP; i++){
         memfree(ptrs[i]);
     }
@@ -99,17 +98,17 @@ void fragmentationTest(){
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 void zeroSize(){
-    printf("\n" COLOR_BLUE "Allocating 0 bytes\n" STYLE_RESET);
+    printf(COLOR_BLUE "Allocating 0 bytes" STYLE_RESET "\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf(COLOR_YELLOW "Allocating: memalloc(0)\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Allocating: memalloc(0)" STYLE_RESET "\n");
     void* ptr = memalloc(0);
     printf("returned: %p\n", ptr);
     
@@ -119,13 +118,13 @@ void zeroSize(){
 }
 
 void freeRandPtr(){
-    printf("\n" COLOR_BLUE "Freeing a NULL and random pointer\n" STYLE_RESET);
+    printf(COLOR_BLUE "Freeing a NULL and random pointer" STYLE_RESET "\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf(COLOR_YELLOW "Deallocating NULL\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Deallocating NULL" STYLE_RESET "\n");
     memfree(NULL);
 
     chunkListDump(&allocated, ALL, true);
@@ -133,25 +132,25 @@ void freeRandPtr(){
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
     void* ptr = malloc(64);
-    printf(COLOR_YELLOW "freeing random pointer:" STYLE_RESET " %p\n", ptr);
+    printf("\n" COLOR_YELLOW "freeing random pointer:" STYLE_RESET " %p\n", ptr);
     memfree(ptr);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 #ifndef NDEBUG
 
 void corruption(){
-    printf(COLOR_BLUE "Corruption test\n" STYLE_RESET);
+    printf(COLOR_BLUE "Corruption test" STYLE_RESET "\n");
 
-    printf(COLOR_YELLOW "NULL ptr as a chunk*\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "NULL ptr as a chunk*" STYLE_RESET "\n");
     printf("errCode: %llu\n", chunkVerify(NULL));
 
-    printf(COLOR_YELLOW "Chunk out of bounds\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Chunk out of bounds" STYLE_RESET "\n");
     Chunk* outofbounds = (Chunk*)malloc(sizeof(Chunk));
     outofbounds->signature = HEXSPEAK;
     outofbounds->ptr = Memory - 10;
@@ -169,23 +168,23 @@ void corruption(){
     printf("errCode: %llu\n", chunkVerify(outofbounds));
     free(outofbounds);
 
-    printf(COLOR_YELLOW "Chunk::ptr pointing something else, or first 8 bytes of allocated memory is corrupted\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Chunk::ptr pointing something else, or first 8 bytes of allocated memory is corrupted" STYLE_RESET "\n");
     void* ptr = memalloc(16);
     Chunk* corrupted = &allocated.chunks[0];
-    printf(COLOR_YELLOW "Corrupted ptr\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Corrupted ptr" STYLE_RESET "\n");
     printf("errCode: %llu\n", chunkVerify(corrupted));
     corrupted->ptr += 1;
     printf("errCode: %llu\n", chunkVerify(corrupted));
     corrupted->ptr -= 1;
     printf("errCode: %llu\n", chunkVerify(corrupted));
-    printf(COLOR_YELLOW "Corrupted first 8 bytes\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Corrupted first 8 bytes" STYLE_RESET "\n");
     *corrupted->ptr += 1;
     printf("errCode: %llu\n", chunkVerify(corrupted));
     *corrupted->ptr -= 1;
     printf("errCode: %llu\n", chunkVerify(corrupted));
     memfree(ptr);
 
-    printf(COLOR_YELLOW "Chunk has a 0 size\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Chunk has a 0 size" STYLE_RESET "\n");
     ptr = memalloc(16);
     corrupted = &allocated.chunks[0];
     printf("errCode: %llu\n", chunkVerify(corrupted));
@@ -195,17 +194,17 @@ void corruption(){
     printf("errCode: %llu\n", chunkVerify(corrupted));
     memfree(ptr);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 void clcorruption(){
-    printf(COLOR_BLUE "CL Corruption test\n" STYLE_RESET);
+    printf(COLOR_BLUE "CL Corruption test" STYLE_RESET "\n");
     printf("errCode: %llu\n", chunkListVerify(&allocated));
 
-    printf(COLOR_YELLOW "NULL ptr as a ChunkList*\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "NULL ptr as a ChunkList*" STYLE_RESET "\n");
     printf("errCode: %llu\n", chunkListVerify(NULL));
 
-    printf(COLOR_YELLOW "Allocated more than allowed\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Allocated more than allowed" STYLE_RESET "\n");
     allocated.allocated = CHUNKCAP * 2;
     printf("errCode: %llu\n", chunkListVerify(&allocated));
     allocated.allocated = 0;
@@ -214,7 +213,7 @@ void clcorruption(){
     void* a = memalloc(16);
     void* b = memalloc(16);
 
-    printf(COLOR_YELLOW "Chunks unsorted\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Chunks unsorted" STYLE_RESET "\n");
     Chunk buffer = allocated.chunks[0];
     allocated.chunks[0] = allocated.chunks[1];
     allocated.chunks[1] = buffer;
@@ -223,7 +222,7 @@ void clcorruption(){
     allocated.chunks[0] = buffer;
     printf("errCode: %llu\n", chunkListVerify(&allocated));
 
-    printf(COLOR_YELLOW "Chunks are clipping\n" STYLE_RESET);
+    printf("\n" COLOR_YELLOW "Chunks are clipping" STYLE_RESET "\n");
     allocated.chunks[1].ptr = a; 
     printf("errCode: %llu\n", chunkListVerify(&allocated));
     allocated.allocated = 0;
@@ -236,7 +235,7 @@ void clcorruption(){
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
 
-    printf("\n" COLOR_GREEN "TEST PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "TEST PASSED" STYLE_RESET "\n\n");
 }
 
 #endif
@@ -263,7 +262,7 @@ int main(){
     
     #endif
 
-    printf("\n" COLOR_GREEN "ALL TESTS PASSED\n" STYLE_RESET);
+    printf("\n" COLOR_GREEN "ALL TESTS PASSED" STYLE_RESET "\n");
 
     return 0;
 }

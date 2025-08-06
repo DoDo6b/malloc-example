@@ -115,7 +115,7 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
     {
         fprintf (
             stderr,
-            "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu\n" STYLE_RESET,
+            "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom,
             errCode
@@ -127,7 +127,7 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
 
     if (chunk == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL\n" STYLE_RESET, fileCalledFrom, lineCalledFrom);
+        fprintf (stderr, "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
@@ -172,7 +172,7 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
     {
         fprintf (
             stderr,
-            "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu\n" STYLE_RESET,
+            "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom,
             errCode
@@ -184,7 +184,7 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
 
     if (list == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL\n" STYLE_RESET, fileCalledFrom, lineCalledFrom);
+        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
@@ -227,7 +227,7 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
         break;
 
     default:
-        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "syntax error:" COLOR_DEFAULT " inappropriate display mode\n" STYLE_RESET, fileCalledFrom, lineCalledFrom);
+        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "syntax error:" COLOR_DEFAULT " inappropriate display mode" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
     
@@ -244,7 +244,7 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
 
     if (chunk == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL\n" STYLE_RESET, fileCalledFrom, lineCalledFrom);
+        fprintf (stderr, "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
@@ -253,41 +253,41 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
         fprintf
         (
             stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received pointer doesn't point to the Chunk (Chunk signatures is corrupted)\n" STYLE_RESET,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received pointer doesn't point to the Chunk (Chunk signatures is corrupted)" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
         error_accum = error_accum | ERRCODE_CH_SIGN;
         return error_accum;
     }
-    if (chunk->size < 2)
-    {
-        fprintf
-        (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is 2 (0 in Release build)\n" STYLE_RESET,
-            fileCalledFrom,
-            lineCalledFrom
-        );
-        error_accum = error_accum | ERRCODE_CH_ZEROSIZE;
-    }
     if (chunk->ptr < Memory || chunk->ptr >= Memory + WORDCAP)
     {
         fprintf
         (
             stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr doesn’t belong to a region\n" STYLE_RESET,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr doesn’t belong to a region" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
         error_accum = error_accum | ERRCODE_CH_PTROUTOFBOUNDS;
+    }
+    if (chunk->size < 2)
+    {
+        fprintf
+        (
+            stderr,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is 2 word(s) (0 in Release build)" STYLE_RESET "\n",
+            fileCalledFrom,
+            lineCalledFrom
+        );
+        error_accum = error_accum | ERRCODE_CH_ZEROSIZE;
     }
     if (chunk->ptr + chunk->size > Memory + WORDCAP)
     {
         fprintf
         (
             stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is too big (chunk crosses the memory boundary)\n" STYLE_RESET,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is too big (chunk crosses the memory boundary)" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -298,7 +298,7 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
         fprintf
         (
             stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr has been changed (memory header is different)\n" STYLE_RESET,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr has been changed (memory header is different)" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -309,7 +309,7 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
         fprintf
         (
             stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size has been changed (memory header is different)\n" STYLE_RESET,
+            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size has been changed (memory header is different)" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -325,7 +325,7 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
 
     if (list == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL\n" STYLE_RESET, fileCalledFrom, lineCalledFrom);
+        fprintf (stderr, "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
@@ -334,54 +334,68 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
         fprintf
         (
             stderr,
-            "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received pointer doesn't point to the ChunkList (ChunkList signatures is corrupted)\n" STYLE_RESET,
+            "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList signatures is corrupted" STYLE_RESET "\n",
             fileCalledFrom,
             lineCalledFrom
         );
         error_accum = error_accum | ERRCODE_CL_SIGN;
         return error_accum;
     }
-    if (list->allocated > CHUNKCAP)
+    else
     {
-        fprintf
-        (
-            stderr,
-            "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList::allocated > CHUNKCAP (chunk lost)\n" STYLE_RESET,
-            fileCalledFrom,
-            lineCalledFrom
-        );
-        error_accum = error_accum | ERRCODE_CL_ALLOCATED;
-        return error_accum;
-    }
-    for (size_t i = 0; i < list->allocated; i++)
-    {
-        uint64_t chErrCode = chunkVerify(&list->chunks[i]);
-        if (chErrCode != 0)
+        if (list->allocated > CHUNKCAP)
         {
             fprintf
             (
                 stderr,
-                "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk[%zu] failed verification\n" STYLE_RESET,
+                "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList::allocated > CHUNKCAP (chunk lost)" STYLE_RESET "\n",
                 fileCalledFrom,
-                lineCalledFrom,
-                i
+                lineCalledFrom
             );
-            error_accum = error_accum | chErrCode;
+            error_accum = error_accum | ERRCODE_CL_ALLOCATED;
+            return error_accum;
         }
-        else
+        for (size_t i = 0; i < list->allocated; i++)
         {
-            if(i>=1 && list->chunks[i-1].ptr + list->chunks[i-1].size > list->chunks[i].ptr)
+            uint64_t chErrCode = chunkVerify(&list->chunks[i]);
+            if (chErrCode != 0)
             {
                 fprintf
                 (
                     stderr,
-                    "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunks [%zu] and [%zu] overlapping each other\n" STYLE_RESET,
+                    "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk[%zu] failed verification" STYLE_RESET "\n",
                     fileCalledFrom,
                     lineCalledFrom,
-                    i-1,
                     i
                 );
-                error_accum = error_accum | ERRCODE_CL_OVERLAPING;
+                error_accum = error_accum | chErrCode;
+            }
+            else if (i >= 1)
+            {
+                if (list->chunks[i-1].ptr > list->chunks[i].ptr)
+                {
+                    fprintf
+                    (
+                        stderr,
+                        "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList is unsorted" STYLE_RESET "\n",
+                        fileCalledFrom,
+                        lineCalledFrom
+                    );
+                    error_accum = error_accum | ERRCODE_CL_UNSORTED;
+                }
+                else if (list->chunks[i-1].ptr + list->chunks[i-1].size > list->chunks[i].ptr)
+                {
+                    fprintf
+                    (
+                        stderr,
+                        "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunks [%zu] and [%zu] overlapping each other" STYLE_RESET "\n",
+                        fileCalledFrom,
+                        lineCalledFrom,
+                        i-1,
+                        i
+                    );
+                    error_accum = error_accum | ERRCODE_CL_OVERLAPING;
+                }
             }
         }
     }
