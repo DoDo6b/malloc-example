@@ -111,21 +111,22 @@ void memDump (const void* pointer, size_t words)
     const unsigned char* ptr        =   (const unsigned char*)pointer;
     size_t               byteSize   =   words * sizeof(uintptr_t);
 
-    printf ("  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
-    printf ("  {\n    ");
-        
+    alog ( "  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
+    alog ( "  {\n    ");
+    
+    alog ( "$x");
     for (size_t i = 0; i < byteSize; i++)
     {
-        printf(COLOR_BLACK "%02zx " STYLE_RESET, i);
+        alog ( "%02zx ", i);
     }
-    printf("\n    ");
+    alog ( "$d\n    $c");
 
     for (size_t i=0; i < byteSize; i++)
     {
-        printf(COLOR_BCYAN "%02x " STYLE_RESET, *(ptr+i));
+        alog ( "%02x ", *(ptr+i));
     }
         
-    printf("\n  }\n");
+    alog ( "$d\n  }\n");
 }
 
 void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool bytesDump)
@@ -135,9 +136,8 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
     uint64_t errCode = chunkVerify(chunk);
     if (errCode != 0)
     {
-        fprintf (
-            stderr,
-            "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu" STYLE_RESET "\n",
+        alog (
+            "%s:%d: chunkDump: $#$rverification error:$d verification failed with code: %llu$/#\n",
             fileCalledFrom,
             lineCalledFrom,
             errCode
@@ -149,14 +149,14 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
 
     if (chunk == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
+        alog ( "%s:%d: chunkDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
     #endif
 
 
-    printf
+    alog
     (
         "  ptr: %p(%p), size: %zu word(s)\n",
         (void*) chunk->ptr,
@@ -176,9 +176,8 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
     uint64_t errCode = chunkListVerify(list);
     if (errCode != 0)
     {
-        fprintf (
-            stderr,
-            "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " verification failed with code: %llu" STYLE_RESET "\n",
+        alog (
+            "%s:%d: chunkListDump: $#$rverification error:$d verification failed with code: %llu$/#\n",
             fileCalledFrom,
             lineCalledFrom,
             errCode
@@ -190,25 +189,25 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
 
     if (list == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
+        alog ( "%s:%d: chunkListDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
     #endif
 
-    printf ("%s Dump(allocated: %zu chunk(s))\n{\n", name, list->allocated);
+    alog ( "%s Dump(allocated: %zu chunk(s))\n{\n", name, list->allocated);
 
     if (list->allocated==0)
     {
-        printf ("  " STYLE_ITALIC "Empty" STYLE_RESET "\n");
-        printf("}\n");
+        alog ( "  $*Empty$/*\n");
+        alog ( "}\n");
         return;
     }
 
     switch (showMode)
     {
     case HIDE:
-        printf ("  " STYLE_ITALIC "Chunks are hidden" STYLE_RESET "\n");
+        alog ( "  $*Chunks are hidden$/*\n");
         break;
 
     case FIRSNLAST:
@@ -218,7 +217,7 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
             {
                 chunkDump (&list->chunks[i], bytesDump);
             }
-            printf("  ...\n");
+            alog ( "  ...\n");
             for (size_t i = list->allocated - 4; list->allocated > 4 && i < list->allocated; ++i)
             {
                 chunkDump (&list->chunks[i], bytesDump);
@@ -233,11 +232,11 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
         break;
 
     default:
-        fprintf (stderr, "%s:%d: chunkListDump: " STYLE_BOLD COLOR_RED "syntax error:" COLOR_DEFAULT " inappropriate display mode" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
+        alog ( "%s:%d: chunkListDump: $#$rsyntax error:$d inappropriate display mode$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
     
-    printf("}\n");
+    alog ( "}\n");
 }
 
 
@@ -250,16 +249,15 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
 
     if (chunk == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
+        alog ( "%s:%d: chunkVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
     if (chunk->signature != HEXSPEAK)
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received pointer doesn't point to the Chunk (Chunk signatures is corrupted)" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d received pointer doesn't point to the Chunk (Chunk signatures is corrupted)$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -268,10 +266,9 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
     }
     if (chunk->ptr < Memory || chunk->ptr >= Memory + WORDCAP)
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr doesn’t belong to a region" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d Chunk::ptr doesn’t belong to a region$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -279,10 +276,9 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
     }
     if (chunk->size < 2)
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is 2 word(s) (0 in Release build)" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d Chunk::size is 2 word(s) (0 in Release build)$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -290,10 +286,9 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
     }
     if (chunk->ptr + chunk->size > Memory + WORDCAP)
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size is too big (chunk crosses the memory boundary)" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d Chunk::size is too big (chunk crosses the memory boundary)$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -301,10 +296,9 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
     }
     if (*chunk->ptr != ((uintptr_t)chunk->ptr ^ HEXSPEAK))
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::ptr has been changed (memory header is different)" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d Chunk::ptr has been changed (memory header is different)$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -313,10 +307,9 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
     }
     if (*(chunk->ptr + chunk->size - 1) != ((uintptr_t)(chunk->ptr + chunk->size) ^ HEXSPEAK))
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk::size has been changed (memory header is different)" STYLE_RESET "\n",
+            "%s:%d: chunkVerify: $#$rverification error:$d Chunk::size has been changed (memory header is different)$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -333,16 +326,15 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
 
     if (list == NULL)
     {
-        fprintf (stderr, "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " received a NULL" STYLE_RESET "\n", fileCalledFrom, lineCalledFrom);
+        alog ( "%s:%d: chunkListVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
     if (list->sign != CANARY || list->taleSign != CANARY)
     {
-        fprintf
+        alog
         (
-            stderr,
-            "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList signatures is corrupted" STYLE_RESET "\n",
+            "%s:%d: chunkListVerify: $#$rverification error:$d ChunkList signatures is corrupted$/#\n",
             fileCalledFrom,
             lineCalledFrom
         );
@@ -353,10 +345,9 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
     {
         if (list->allocated > CHUNKCAP)
         {
-            fprintf
+            alog
             (
-                stderr,
-                "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList::allocated > CHUNKCAP (chunk lost)" STYLE_RESET "\n",
+                "%s:%d: chunkListVerify: $#$rverification error:$d ChunkList::allocated > CHUNKCAP (chunk lost)$/#\n",
                 fileCalledFrom,
                 lineCalledFrom
             );
@@ -368,10 +359,9 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
             uint64_t chErrCode = chunkVerify(&list->chunks[i]);
             if (chErrCode != 0)
             {
-                fprintf
+                alog
                 (
-                    stderr,
-                    "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunk[%zu] failed verification" STYLE_RESET "\n",
+                    "%s:%d: chunkListVerify: $#$rverification error:$d Chunk[%zu] failed verification$/#\n",
                     fileCalledFrom,
                     lineCalledFrom,
                     i
@@ -382,10 +372,9 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
             {
                 if (list->chunks[i-1].ptr > list->chunks[i].ptr)
                 {
-                    fprintf
+                    alog
                     (
-                        stderr,
-                        "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " ChunkList is unsorted" STYLE_RESET "\n",
+                        "%s:%d: chunkListVerify: $#$rverification error:$d ChunkList is unsorted$/#\n",
                         fileCalledFrom,
                         lineCalledFrom
                     );
@@ -393,10 +382,9 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
                 }
                 else if (list->chunks[i-1].ptr + list->chunks[i-1].size > list->chunks[i].ptr)
                 {
-                    fprintf
+                    alog
                     (
-                        stderr,
-                        "%s:%d: chunkListVerify: " STYLE_BOLD COLOR_RED "verification error:" COLOR_DEFAULT " Chunks [%zu] and [%zu] overlapping each other" STYLE_RESET "\n",
+                        "%s:%d: chunkListVerify: $#$rverification error:$d Chunks [%zu] and [%zu] overlapping each other$/#\n",
                         fileCalledFrom,
                         lineCalledFrom,
                         i-1,

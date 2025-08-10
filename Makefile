@@ -1,10 +1,18 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Weffc++ -Wcast-qual -Wchar-subscripts -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security -Wmissing-declarations -Wnon-virtual-dtor -Woverloaded-virtual -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-aliasing -Wstrict-overflow -Wswitch-default -Wswitch-enum -Wunused -std=c99
-BUILD_DIR = build
-TARGET = memalloc
+CFLAGS = -Wall -Wextra -Wcast-qual -Wchar-subscripts -Wconversion \
+         -Wempty-body -Wfloat-equal -Wformat -Wformat-nonliteral \
+         -Wformat-security -Wmissing-declarations -Wpointer-arith \
+         -Wredundant-decls -Wshadow -Wstrict-aliasing -Wstrict-overflow \
+         -Wswitch-default -Wswitch-enum -Wunused -std=c99
 
-SRCS = main.c memory.c
-OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
+BUILD_DIR = .build
+TARGET = execute
+
+SRC_DIRS = . allocator GC logger
+SRCS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
+
+DIRS = $(foreach dir,$(SRC_DIRS),$(BUILD_DIR)/$(dir))
 
 all: $(TARGET)
 
@@ -12,14 +20,12 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
 $(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 
-rebuild:
-	make clean
-	make
+rebuild: clean all
 
-.PHONY: all clean
+.PHONY: all clean rebuild

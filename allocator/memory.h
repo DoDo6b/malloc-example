@@ -1,13 +1,13 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "Styles.h"
-#include "Macro.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
+#include "../logger/logger.h"
+#include "../headers/Macro.h"
+
 
 #define MEMORYCAP   65536
 #define WORDCAP     (MEMORYCAP/sizeof(uintptr_t))
