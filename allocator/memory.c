@@ -438,8 +438,8 @@ uint64_t _chunkListVerify (const char* fileCalledFrom, unsigned int lineCalledFr
 uint64_t _regionVerify (const char* fileCalledFrom, unsigned int lineCalledFrom)
 {
     uint64_t error_acum = 0;
-    chunkListVerify(&allocated);
-    chunkListVerify(&freed);
+    error_acum = error_acum | chunkListVerify(&allocated);
+    error_acum = error_acum | chunkListVerify(&freed);
     if (allocated.words + freed.words != WORDCAP)
     {
         alog 
