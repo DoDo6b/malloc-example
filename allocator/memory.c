@@ -250,6 +250,13 @@ uint64_t _chunkVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, 
     {
         alog ("%s:%d: chunkVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
+        alog
+        (
+            "%s:%d: chunkVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
         return error_accum;
     }
     if (chunk->signature != HEXSPEAK)
@@ -261,6 +268,13 @@ uint64_t _chunkVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, 
             lineCalledFrom
         );
         error_accum = error_accum | ERRCODE_CH_SIGN;
+        alog
+        (
+            "%s:%d: chunkVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
         return error_accum;
     }
     if (chunk->ptr < Memory || chunk->ptr >= Memory + WORDCAP)
@@ -337,6 +351,13 @@ uint64_t _chunkListVerify (const char* fileCalledFrom, unsigned int lineCalledFr
     {
         alog ("%s:%d: chunkListVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
+        alog
+        (
+            "%s:%d: chunkListVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
         return error_accum;
     }
     if (list->sign != CANARY || list->taleSign != CANARY)
@@ -348,6 +369,13 @@ uint64_t _chunkListVerify (const char* fileCalledFrom, unsigned int lineCalledFr
             lineCalledFrom
         );
         error_accum = error_accum | ERRCODE_CL_SIGN;
+        alog
+        (
+            "%s:%d: chunkListVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
         return error_accum;
     }
     else
@@ -361,6 +389,13 @@ uint64_t _chunkListVerify (const char* fileCalledFrom, unsigned int lineCalledFr
                 lineCalledFrom
             );
             error_accum = error_accum | ERRCODE_CL_ALLOCATED;
+            alog
+            (
+                "%s:%d: chunkListVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+                fileCalledFrom,
+                lineCalledFrom,
+                error_accum
+            );
             return error_accum;
         }
 
