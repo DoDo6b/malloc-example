@@ -1,17 +1,18 @@
 #include "memory.h"
 
 uintptr_t Memory[WORDCAP];
-size_t WordAlloc = 0;
 
 ChunkList allocated={
     IF_DBG(.sign = CANARY,)
-    .allocated = 0,
+    .allocated=0,
+    .words=0,
     .chunks={0},
     IF_DBG(.taleSign = CANARY,)
 };
 ChunkList freed={
     IF_DBG(.sign = CANARY,)
     .allocated=1,
+    .words=WORDCAP,
     .chunks={
         [0]={IF_DBG(.signature=HEXSPEAK,) .ptr=Memory, .size=WORDCAP}
     },
@@ -111,36 +112,35 @@ void memDump (const void* pointer, size_t words)
     const unsigned char* ptr        =   (const unsigned char*)pointer;
     size_t               byteSize   =   words * sizeof(uintptr_t);
 
-    alog ( "  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
-    alog ( "  {\n    ");
+    alog ("  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
+    alog ("  {\n    ");
     
-    alog ( "$x");
+    alog ("$x");
     for (size_t i = 0; i < byteSize; i++)
     {
-        alog ( "%02zx ", i);
+        alog ("%02zx ", i);
     }
-    alog ( "$d\n    $c");
+    alog ("$d\n    $c");
 
     for (size_t i=0; i < byteSize; i++)
     {
-        alog ( "%02x ", *(ptr+i));
+        alog ("%02x ", *(ptr+i));
     }
         
-    alog ( "$d\n  }\n");
+    alog ("$d\n  }\n");
 }
 
-void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool bytesDump)
+void _chunkDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk, bool bytesDump)
 {
     #ifndef NDEBUG
     
-    uint64_t errCode = chunkVerify(chunk);
-    if (errCode != 0)
+    if (chunkVerify(chunk) != 0)
     {
-        alog (
-            "%s:%d: chunkDump: $#$rverification error:$d verification failed with code: %llu$/#\n",
+        alog
+        (
+            "%s:%d: chunkDump: $#$rverification error:$d Chunk failed verification$/#\n",
             fileCalledFrom,
-            lineCalledFrom,
-            errCode
+            lineCalledFrom
         );
         abort();
     }
@@ -149,7 +149,7 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
 
     if (chunk == NULL)
     {
-        alog ( "%s:%d: chunkDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
+        alog ("%s:%d: chunkDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
@@ -170,17 +170,16 @@ void cDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk
     }
 }
 
-void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump){
+void _chunkListDump (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump){
     #ifndef NDEBUG
 
-    uint64_t errCode = chunkListVerify(list);
-    if (errCode != 0)
+    if (chunkListVerify(list) != 0)
     {
-        alog (
-            "%s:%d: chunkListDump: $#$rverification error:$d verification failed with code: %llu$/#\n",
+        alog
+        (
+            "%s:%d: chunkListDump: $#$rverification error:$d ChunkList failed verification$/#\n",
             fileCalledFrom,
-            lineCalledFrom,
-            errCode
+            lineCalledFrom
         );
         abort();
     }
@@ -189,25 +188,25 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
 
     if (list == NULL)
     {
-        alog ( "%s:%d: chunkListDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
+        alog ("%s:%d: chunkListDump: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
 
     #endif
 
-    alog ( "%s Dump(allocated: %zu chunk(s))\n{\n", name, list->allocated);
+    alog ("%s Dump(allocated: %zu chunk(s))\n{\n", name, list->allocated);
 
     if (list->allocated==0)
     {
-        alog ( "  $*Empty$/*\n");
-        alog ( "}\n");
+        alog ("  $*Empty$/*\n");
+        alog ("}\n");
         return;
     }
 
     switch (showMode)
     {
     case HIDE:
-        alog ( "  $*Chunks are hidden$/*\n");
+        alog ("  $*Chunks are hidden$/*\n");
         break;
 
     case FIRSNLAST:
@@ -217,7 +216,7 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
             {
                 chunkDump (&list->chunks[i], bytesDump);
             }
-            alog ( "  ...\n");
+            alog ("  ...\n");
             for (size_t i = list->allocated - 4; list->allocated > 4 && i < list->allocated; ++i)
             {
                 chunkDump (&list->chunks[i], bytesDump);
@@ -232,24 +231,24 @@ void clDump(const char* fileCalledFrom, unsigned int lineCalledFrom, const char*
         break;
 
     default:
-        alog ( "%s:%d: chunkListDump: $#$rsyntax error:$d inappropriate display mode$/#\n", fileCalledFrom, lineCalledFrom);
+        alog ("%s:%d: chunkListDump: $#$rsyntax error:$d inappropriate display mode$/#\n", fileCalledFrom, lineCalledFrom);
         abort();
     }
     
-    alog ( "}\n");
+    alog ("}\n");
 }
 
 
 #ifndef NDEBUG
 
 
-uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk)
+uint64_t _chunkVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk)
 {
     uint64_t error_accum = 0;
 
     if (chunk == NULL)
     {
-        alog ( "%s:%d: chunkVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
+        alog ("%s:%d: chunkVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
@@ -317,16 +316,26 @@ uint64_t cVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const
         error_accum = error_accum | ERRCODE_CH_SIZECHANGED;
     }
 
+    if (error_accum != 0)
+    {
+        alog
+        (
+            "%s:%d: chunkVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
+    }
     return error_accum;
 }
 
-uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const ChunkList* list)
+uint64_t _chunkListVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, const ChunkList* list)
 {
     uint64_t error_accum = 0;
 
     if (list == NULL)
     {
-        alog ( "%s:%d: chunkListVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
+        alog ("%s:%d: chunkListVerify: $#$rverification error:$d received a NULL$/#\n", fileCalledFrom, lineCalledFrom);
         error_accum = error_accum | ERRCODE_NULL;
         return error_accum;
     }
@@ -354,6 +363,8 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
             error_accum = error_accum | ERRCODE_CL_ALLOCATED;
             return error_accum;
         }
+
+        size_t words = 0;
         for (size_t i = 0; i < list->allocated; i++)
         {
             uint64_t chErrCode = chunkVerify(&list->chunks[i]);
@@ -368,34 +379,89 @@ uint64_t clVerify (const char* fileCalledFrom, unsigned int lineCalledFrom, cons
                 );
                 error_accum = error_accum | chErrCode;
             }
-            else if (i >= 1)
+            else
             {
-                if (list->chunks[i-1].ptr > list->chunks[i].ptr)
+                words += list->chunks[i].size;
+                if (i >= 1)
                 {
-                    alog
-                    (
-                        "%s:%d: chunkListVerify: $#$rverification error:$d ChunkList is unsorted$/#\n",
-                        fileCalledFrom,
-                        lineCalledFrom
-                    );
-                    error_accum = error_accum | ERRCODE_CL_UNSORTED;
-                }
-                else if (list->chunks[i-1].ptr + list->chunks[i-1].size > list->chunks[i].ptr)
-                {
-                    alog
-                    (
-                        "%s:%d: chunkListVerify: $#$rverification error:$d Chunks [%zu] and [%zu] overlapping each other$/#\n",
-                        fileCalledFrom,
-                        lineCalledFrom,
-                        i-1,
-                        i
-                    );
-                    error_accum = error_accum | ERRCODE_CL_OVERLAPING;
+                    if (list->chunks[i-1].ptr > list->chunks[i].ptr)
+                    {
+                        alog
+                        (
+                            "%s:%d: chunkListVerify: $#$rverification error:$d ChunkList is unsorted$/#\n",
+                            fileCalledFrom,
+                            lineCalledFrom
+                        );
+                        error_accum = error_accum | ERRCODE_CL_UNSORTED;
+                    }
+                    else if (list->chunks[i-1].ptr + list->chunks[i-1].size > list->chunks[i].ptr)
+                    {
+                        alog
+                        (
+                            "%s:%d: chunkListVerify: $#$rverification error:$d Chunks [%zu] and [%zu] overlapping each other$/#\n",
+                            fileCalledFrom,
+                            lineCalledFrom,
+                            i-1,
+                            i
+                        );
+                        error_accum = error_accum | ERRCODE_CL_OVERLAPING;
+                    }
                 }
             }
         }
+        if (list->words != words)
+        {
+            alog
+            (
+                "%s:%d: chunkListVerify: $#$rverification error:$d memory leak$/#\n",
+                fileCalledFrom,
+                lineCalledFrom
+            );
+            alog ("  ChunkList::words == %zu words, when counted %zu words\n", list->words, words);
+            error_accum = error_accum | ERRCODE_CL_MEMLEAK;
+        }
+    }
+
+    if (error_accum != 0)
+    {
+        alog
+        (
+            "%s:%d: chunkListVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_accum
+        );
     }
     return error_accum;
+}
+
+uint64_t _regionVerify (const char* fileCalledFrom, unsigned int lineCalledFrom)
+{
+    uint64_t error_acum = 0;
+    chunkListVerify(&allocated);
+    chunkListVerify(&freed);
+    if (allocated.words + freed.words != WORDCAP)
+    {
+        alog 
+        (
+            "%s:%d: regionVerify: $#$rverification error:$d memory leak detected$/#\n",
+            fileCalledFrom,
+            lineCalledFrom
+        );
+        error_acum = error_acum | ERRCODE_G_MEMLEAK;
+    }
+
+    if (error_acum != 0)
+    {
+        alog 
+        (
+            "%s:%d: regionVerify: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            fileCalledFrom,
+            lineCalledFrom,
+            error_acum
+        );
+    }
+    return error_acum;
 }
 
 #endif
@@ -405,7 +471,7 @@ void* memalloc (size_t size)
     if (allocated.allocated < CHUNKCAP)
     {
         const size_t words = (size + sizeof(uintptr_t) - 1) / sizeof(uintptr_t) IF_DBG(+2);
-        if (words == 0 IF_DBG(+2) || WordAlloc + words > WORDCAP) return NULL;
+        if (words == 0 IF_DBG(+2) || allocated.words + words > WORDCAP) return NULL;
 
         for (size_t i=0; i < freed.allocated; i++)
         {
@@ -428,7 +494,10 @@ void* memalloc (size_t size)
                 IF_DBG(*(ichunk.ptr + words - 1)    =   ((uintptr_t)(ichunk.ptr + words) ^ HEXSPEAK);)
 
                 chunkPush (&allocated, ichunk.ptr, words);
-                WordAlloc += words;
+
+                allocated.words += words;
+                freed.words     -= words;
+
                 return ichunk.ptr IF_DBG(+1);
             }
         }
@@ -445,7 +514,9 @@ void memfree (void* ptr)
     {
         const Chunk ichunk = allocated.chunks[index];
         chunkPop (&allocated, (size_t)index);
-        WordAlloc -= ichunk.size;
         chunkPushnMerge (&freed, ichunk.ptr, ichunk.size);
+
+        allocated.words -= ichunk.size;
+        freed.words     += ichunk.size;
     }
 }

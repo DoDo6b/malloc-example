@@ -14,6 +14,8 @@
 #define ERRCODE_CL_CHFAILED         512
 #define ERRCODE_CL_UNSORTED         1024
 #define ERRCODE_CL_OVERLAPING       2048
+#define ERRCODE_CL_MEMLEAK          4096
+#define ERRCODE_G_MEMLEAK           8192
 
 
 #endif

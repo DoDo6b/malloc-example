@@ -22,7 +22,7 @@ int _flog (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* 
         return -1;
     }
 
-    char*       buffer = (char*) malloc (BUFSIZ * sizeof(char));
+    char*       buffer = (char*) calloc (BUFSIZ, sizeof(char));
     char* const buffer_start = buffer;
 
     if (!buffer)

@@ -7,13 +7,14 @@ void overWordCap(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     void* ptr = memalloc(MEMORYCAP-64);
 
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
-    alog ("We are almost out of memory (Word(s) used: %zu)\n", WordAlloc);
+    alog ("We are almost out of memory (Word(s) used: %zu)\n", allocated.words);
 
     void* bigptr = memalloc(MEMORYCAP);
     alog ("\n$yAllocating %d byte(s)$d\npointer returned: %p\n\n", MEMORYCAP, bigptr);
@@ -27,7 +28,8 @@ void overWordCap(){
     memfree(ptr);
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$gTEST PASSED$d\n\n");
 }
@@ -37,7 +39,8 @@ void overChunkCap(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     char* ptrs[CHUNKCAP+1];
     for(int i=0; i<CHUNKCAP; i++){
@@ -62,7 +65,8 @@ void overChunkCap(){
     }
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$gTEST PASSED$d\n\n");
 }
@@ -72,7 +76,8 @@ void fragmentationTest(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     char* ptrs[CHUNKCAP];
     for(int i=0; i<CHUNKCAP; i++){
@@ -96,7 +101,8 @@ void fragmentationTest(){
     }
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$gTEST PASSED$d\n\n");
 }
@@ -106,7 +112,8 @@ void zeroSize(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$yAllocating: memalloc(0)$d\n");
     void* ptr = memalloc(0);
@@ -114,7 +121,8 @@ void zeroSize(){
     
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 }
 
 void freeRandPtr(){
@@ -122,14 +130,16 @@ void freeRandPtr(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$yDeallocating NULL$d\n");
     memfree(NULL);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     void* ptr = malloc(64);
     alog ("\n$yfreeing random pointer:$d %p\n", ptr);
@@ -137,7 +147,8 @@ void freeRandPtr(){
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
-    assert(freed.allocated==1 && WordAlloc==0 && allocated.allocated==0);
+    regionVerify();
+    assert(allocated.allocated == 0 && freed.allocated == 1);
 
     alog ("\n$gTEST PASSED$d\n\n");
 }
@@ -146,6 +157,7 @@ void freeRandPtr(){
 
 void corruption(){
     alog ("$bCorruption test$d\n");
+    regionVerify();
 
     alog ("\n$yNULL ptr as a chunk*$d\n");
     alog ("errCode: %llu\n", chunkVerify(NULL));
@@ -194,11 +206,14 @@ void corruption(){
     alog ("errCode: %llu\n", chunkVerify(corrupted));
     memfree(ptr);
 
+    regionVerify();
     alog ("\n$gTEST PASSED$d\n\n");
 }
 
 void clcorruption(){
     alog ("$bCL Corruption test$d\n");
+    regionVerify();
+
     alog ("errCode: %llu\n", chunkListVerify(&allocated));
 
     alog ("\n$yNULL ptr as a ChunkList*$d\n");
@@ -235,6 +250,7 @@ void clcorruption(){
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
 
+    regionVerify();
     alog ("\n$gTEST PASSED$d\n\n");
 }
 

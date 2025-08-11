@@ -27,13 +27,13 @@ typedef struct
 {
     IF_DBG(uintptr_t sign;)
     size_t  allocated;
+    size_t  words;
     Chunk   chunks[CHUNKCAP];
     IF_DBG(uintptr_t taleSign;)
 }ChunkList;
 
 extern ChunkList    allocated;
 extern ChunkList    freed;
-extern size_t       WordAlloc;
 extern uintptr_t    Memory[WORDCAP];
 
 void*   memalloc    (size_t size);
@@ -45,26 +45,28 @@ void    chunkPop        (ChunkList* list, size_t index);
 int     chunkFind       (const ChunkList* list, const uintptr_t* ptr);
 size_t  chunkFindPlace  (const ChunkList* list, const uintptr_t* ptr);
 
-void memDump        (const void* pointer, size_t words);
+void memDump                (const void* pointer, size_t words);
 typedef enum{
     HIDE,
     FIRSNLAST,
     ALL,
 }ShowMode;
-void cDump          (const char* fileCalledFrom, unsigned int lineCalledFrom,                   const Chunk* chunk,                       bool bytesDump);
-void clDump         (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump);
-#define chunkDump(...)              cDump(__FILE__, __LINE__, __VA_ARGS__)
-#define chunkListDump(list, ...)    clDump(__FILE__, __LINE__, #list, list, __VA_ARGS__)
+void _chunkDump            (const char* fileCalledFrom, unsigned int lineCalledFrom,                  const Chunk* chunk,                       bool bytesDump);
+void _chunkListDump        (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* name, const ChunkList* list, ShowMode showMode, bool bytesDump);
+#define chunkDump(...)              _chunkDump      (__FILE__, __LINE__, __VA_ARGS__)
+#define chunkListDump(list, ...)    _chunkListDump  (__FILE__, __LINE__, #list, list, __VA_ARGS__)
 
 #ifndef NDEBUG
 
 
 #include "errCodes.h"
 
-uint64_t cVerify    (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk);
-uint64_t clVerify   (const char* fileCalledFrom, unsigned int lineCalledFrom, const ChunkList* list);
-#define chunkVerify(chunk)            cVerify(__FILE__, __LINE__, chunk)
-#define chunkListVerify(list)        clVerify(__FILE__, __LINE__, list)
+uint64_t _chunkVerify       (const char* fileCalledFrom, unsigned int lineCalledFrom, const Chunk* chunk);
+uint64_t _chunkListVerify   (const char* fileCalledFrom, unsigned int lineCalledFrom, const ChunkList* list);
+uint64_t _regionVerify      (const char* fileCalledFrom, unsigned int lineCalledFrom);
+#define chunkVerify(chunk)          _chunkVerify        (__FILE__, __LINE__, chunk)
+#define chunkListVerify(list)       _chunkListVerify    (__FILE__, __LINE__, list)
+#define regionVerify()              _regionVerify       (__FILE__, __LINE__)
 
 #endif
 
