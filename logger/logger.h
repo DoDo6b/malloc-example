@@ -8,9 +8,8 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../headers/EscSeq.h"
-#include "../headers/htmlTags.h"
-#define SWITCH(esc, html) stream == stdout || stream == stderr ? esc : html
+#include "EscSeq.h"
+#include "htmlTags.h"
 
 #define SPECIFICATOR '$'
 #define SPEC_CLOSE '/'
@@ -29,13 +28,14 @@
 #define SPEC_WHT 'w'
 #define SPEC_DFT 'd'
 
-extern char _logFile[NAME_MAX];
-#define ls_start(fname) strncpy(_logFile, fname, sizeof(_logFile) - 1)
 
-int _flog (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* fname, const char* format, ...);
-#define flog(fname,  format, ...)   _flog(__FILE__, __LINE__, fname,       format, ##__VA_ARGS__);
-#define alog(        format, ...)   _flog(__FILE__, __LINE__, _logFile,      format, ##__VA_ARGS__);
-#define slog(        format, ...)   _flog(__FILE__, __LINE__, "stdout",     format, ##__VA_ARGS__);
+FILE* log_start (const char* fname);
+
+int log_string (const char* format, ...);
+
+void log_close();
+
+const char* get_log();
 
 
 #endif

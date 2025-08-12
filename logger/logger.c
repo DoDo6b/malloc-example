@@ -1,120 +1,116 @@
 #include "logger.h"
 
 
-char _logFile[NAME_MAX];
+char LogFile[NAME_MAX] = "";
+FILE* LogStream = NULL;
+static char Buffer[BUFSIZ] = "";
 
 
-int _flog (const char* fileCalledFrom, unsigned int lineCalledFrom, const char* fname, const char* format, ...)
+FILE* log_start (const char* fname)
 {
-    FILE* stream = NULL;
-    if (strcmp (fname, "stdout") == 0 || strcmp (fname, "") == 0)       stream = stdout;
-    else if (strcmp (fname, "stderr") == 0)                             stream = stderr;
-    else                                                                stream = fopen(fname, "a");
-
-    if (!stream)
+    FILE* buffer = NULL;
+    if      (!strncmp(fname, "stdout", NAME_MAX))   LogStream = stdout;
+    else if (!strncmp(fname, "stderr", NAME_MAX))   LogStream = stderr;
+    else
     {
-        fprintf (
-            stderr,
-            "%s:%d: flog: " ESC_BOLD ESC_RED "perror:" ESC_DEFAULT " can't open stream (received NULL)" ESC_RESET "\n",
-            fileCalledFrom,
-            lineCalledFrom
-        );
-        return -1;
+        buffer = fopen (fname, "a");
+        if (!buffer)
+        {
+            fprintf
+            (
+                stderr,
+                "%s:%d: %s:" ESC_BOLD ESC_RED "fopen error:" ESC_DEFAULT " fopen returned a NULL" ESC_BOLD_CLOSE "\n",
+                __FILE__,
+                __LINE__,
+                __func__
+            );
+            return NULL;
+        }
+        LogStream = buffer;
+
+        atexit (log_close);
     }
 
-    char*       buffer = (char*) calloc (BUFSIZ, sizeof(char));
-    char* const buffer_start = buffer;
+    strncpy (LogFile, fname, NAME_MAX);
 
-    if (!buffer)
+    fprintf (LogStream, "<pre>\n");
+    return LogStream;
+}
+
+#define PRINT_SPEC_(spec) fprintf(LogStream, ( (LogStream == stdout || LogStream == stderr) ? ESC_ ## spec : HTML_ ## spec) )
+
+int log_string (const char* format, ...)
+{
+    if (format[0] == '\0') return 0;
+    if (!LogStream)
     {
-        fprintf (
+        fprintf
+        (
             stderr,
-            "%s:%d: flog: " ESC_BOLD ESC_RED "allocation error:" ESC_DEFAULT " can't allocate buffer" ESC_RESET "\n",
-            fileCalledFrom,
-            lineCalledFrom
+            "%s:%d: %s:" ESC_BOLD ESC_RED "error:" ESC_DEFAULT " LogStream wasn't open, call log_start()" ESC_BOLD_CLOSE "\n",
+            __FILE__,
+            __LINE__,
+            __func__
         );
-        fclose(stream);
         return -1;
     }
 
     va_list args;
     va_start (args, format);
 
-    vsprintf (buffer, format, args);
+    vsprintf (Buffer, format, args);
 
     va_end (args);
 
-    while (*buffer != '\0')
+    size_t printed = 0;
+    for (printed = 0; Buffer[printed] != '\0' && printed < sizeof(Buffer); printed++)
     {
-        switch (*buffer)
+        if (Buffer[printed] == SPECIFICATOR)
         {
-        case SPECIFICATOR:
-            switch (*++buffer)
+            switch (Buffer[++printed])
             {
-            case SPEC_RST:
-                fprintf(stream, SWITCH(ESC_RESET, ""));
-                break;
-            case SPEC_BLD:
-                fprintf(stream, SWITCH(ESC_BOLD, HTML_BOLD));
-                break;
-            case SPEC_ITA:
-                fprintf(stream, SWITCH(ESC_ITALIC, HTML_ITALIC));
-                break;
-            case SPEC_CLOSE:
-                switch (*++buffer)
-                {
-                    case SPEC_BLD:
-                        fprintf(stream, SWITCH(ESC_BOLD_CLOSE, HTML_BOLD_CLOSE));
-                        break;
-                    case SPEC_ITA:
-                        fprintf(stream, SWITCH(ESC_ITALIC_CLOSE, HTML_ITALIC_CLOSE));
-                        break;
-                    default:
-                        fprintf(stream, "$/%c", *buffer);
-                }
-                break;
-            case SPEC_BLK:
-                fprintf(stream, SWITCH(ESC_BLACK, HTML_BLACK));
-                break;
-            case SPEC_RED:
-                fprintf(stream, SWITCH(ESC_RED, HTML_RED));
-                break;
-            case SPEC_GRN:
-                fprintf(stream, SWITCH(ESC_GREEN, HTML_GREEN));
-                break;
-            case SPEC_YLW:
-                fprintf(stream, SWITCH(ESC_YELLOW, HTML_YELLOW));
-                break;
-            case SPEC_BLU:
-                fprintf(stream, SWITCH(ESC_BLUE, HTML_BLUE));
-                break;
-            case SPEC_MGN:
-                fprintf(stream, SWITCH(ESC_MAGENTA, HTML_MAGENTA));
-                break;
-            case SPEC_CYN:
-                fprintf(stream, SWITCH(ESC_CYAN, HTML_CYAN));
-                break;
-            case SPEC_WHT:
-                fprintf(stream, SWITCH(ESC_WHITE, HTML_WHITE));
-                break;
-            case SPEC_DFT:
-                fprintf(stream, SWITCH(ESC_DEFAULT, HTML_DEFAULT));
-                break;
+                case SPEC_RST:  PRINT_SPEC_(RESET);     break;
+                case SPEC_BLD:  PRINT_SPEC_(BOLD);      break;
+                case SPEC_ITA:  PRINT_SPEC_(ITALIC);    break;
+                case SPEC_BLK:  PRINT_SPEC_(BLACK);     break;
+                case SPEC_RED:  PRINT_SPEC_(RED);       break;
+                case SPEC_GRN:  PRINT_SPEC_(GREEN);     break;
+                case SPEC_YLW:  PRINT_SPEC_(YELLOW);    break;
+                case SPEC_BLU:  PRINT_SPEC_(BLUE);      break;
+                case SPEC_CYN:  PRINT_SPEC_(CYAN);      break;
+                case SPEC_MGN:  PRINT_SPEC_(MAGENTA);   break;
+                case SPEC_WHT:  PRINT_SPEC_(WHITE);     break;
+                case SPEC_DFT:  PRINT_SPEC_(DEFAULT);   break;
 
-            default:
-                fprintf(stream, "%c%c", SPECIFICATOR, *buffer);
-                break;
+                case SPEC_CLOSE:
+                    switch (Buffer[++printed])
+                    {
+                        case SPEC_BLD:  PRINT_SPEC_(BOLD_CLOSE);      break;
+                        case SPEC_ITA:  PRINT_SPEC_(ITALIC_CLOSE);    break;
+
+                        default:        fprintf(LogStream, "%c%c%c", SPECIFICATOR, SPEC_CLOSE, Buffer[printed]);
+                    }
+                    break;
+
+                default:    fprintf(LogStream, "%c%c", SPECIFICATOR, Buffer[printed]);
             }
-            break;
-        case '\n':
-            fprintf(stream, SWITCH("", "<br>"));
-        default:
-            fprintf(stream, "%c", *buffer);
         }
-        buffer++;
+        else fprintf(LogStream, "%c", Buffer[printed]);
     }
 
-    free (buffer_start);
-    if (stream != stdout && stream != stderr) fclose (stream);
-    return (int)(buffer - buffer_start);
+    if (LogStream != stderr || LogStream != stdout) fflush (LogStream);
+    return printed;
+}
+
+#undef PRINT_SPEC_
+
+void log_close()
+{
+    fprintf (LogStream, "\n</pre>\n");
+    if (LogStream && (LogStream != stdout || LogStream != stderr) ) fclose (LogStream);
+}
+
+const char* get_log()
+{
+    return LogFile;
 }
