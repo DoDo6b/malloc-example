@@ -1,7 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -28,6 +27,8 @@
 #define SPEC_WHT 'w'
 #define SPEC_DFT 'd'
 
+
+#define NAME_MAX 260
 
 FILE* log_start (const char* fname);
 

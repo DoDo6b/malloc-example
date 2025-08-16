@@ -20,7 +20,7 @@ ChunkList freed={
 };
 
 
-void chunkPush (ChunkList* list, void* ptr, size_t size)
+static void chunkPush (ChunkList* list, uintptr_t* ptr, size_t size)
 {
     assert (list->allocated < CHUNKCAP);
     assert (size > 0 && ptr != NULL);
@@ -40,7 +40,7 @@ void chunkPush (ChunkList* list, void* ptr, size_t size)
 }
 
 
-void chunkPop (ChunkList* list, size_t index)
+static void chunkPop (ChunkList* list, size_t index)
 {
     assert (index < list->allocated);
     list->allocated--;
@@ -51,7 +51,7 @@ void chunkPop (ChunkList* list, size_t index)
 }
 
 
-int chunkFind (const ChunkList* list, const uintptr_t* ptr)
+static int chunkFind (const ChunkList* list, const uintptr_t* ptr)
 {
     int lp = 0;
     int rp = (int)list->allocated - 1;
@@ -65,7 +65,7 @@ int chunkFind (const ChunkList* list, const uintptr_t* ptr)
     return -1;
 }
 
-size_t chunkFindPlace (const ChunkList* list, const uintptr_t* ptr)
+static size_t chunkFindPlace (const ChunkList* list, const uintptr_t* ptr)
 {
     size_t lp = 0;
     size_t rp = list->allocated - 1;
@@ -80,7 +80,7 @@ size_t chunkFindPlace (const ChunkList* list, const uintptr_t* ptr)
 }
 
 
-void chunkPushnMerge (ChunkList* list, uintptr_t* ptr, size_t size)
+static void chunkPushnMerge (ChunkList* list, uintptr_t* ptr, size_t size)
 {
     assert (ptr != NULL);
     size_t index = chunkFindPlace(list, ptr);
@@ -225,6 +225,11 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
             }
             break;
         }
+        for (size_t i = 0; i < list->allocated; ++i)
+        {
+            chunkDump (&list->chunks[i], bytesDump);
+        }
+        break;
     case ALL:
         for (size_t i = 0; i < list->allocated; ++i)
         {
@@ -579,7 +584,7 @@ void memfree (void* ptr)
 {
     IF_DBG(ptr = (uintptr_t*)ptr - 1;)
 
-    int index = chunkFind (&allocated, ptr);
+    int index = chunkFind (&allocated, (uintptr_t*)ptr);
     if (index != -1)
     {
         const Chunk ichunk = allocated.chunks[index];

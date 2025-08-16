@@ -99,7 +99,7 @@ int log_string (const char* format, ...)
     }
 
     if (LogStream != stderr || LogStream != stdout) fflush (LogStream);
-    return printed;
+    return (int)printed;
 }
 
 #undef PRINT_SPEC_

@@ -2,7 +2,7 @@
 #include "logger/logger.h"
 #include "allocator/memory.h"
 
-void overWordCap(){
+static void overWordCap(){
     log_string ("$bAllocating more than WORDCAP(%lu)$d\n", WORDCAP);
 
     chunkListDump(&allocated, ALL, true);
@@ -34,7 +34,7 @@ void overWordCap(){
     log_string ("\n$gTEST PASSED$d\n\n");
 }
 
-void overChunkCap(){
+static void overChunkCap(){
     log_string ("$bAllocating more than CHUNKCAP(%d)$d\n", CHUNKCAP);
 
     chunkListDump(&allocated, ALL, true);
@@ -71,7 +71,7 @@ void overChunkCap(){
     log_string ("\n$gTEST PASSED$d\n\n");
 }
 
-void fragmentationTest(){
+static void fragmentationTest(){
     log_string ("$bFragmentation test$d\n");
 
     chunkListDump(&allocated, ALL, true);
@@ -107,7 +107,7 @@ void fragmentationTest(){
     log_string ("\n$gTEST PASSED$d\n\n");
 }
 
-void zeroSize(){
+static void zeroSize(){
     log_string ("$bAllocating 0 bytes$d\n");
 
     chunkListDump(&allocated, ALL, true);
@@ -125,7 +125,7 @@ void zeroSize(){
     assert(allocated.allocated == 0 && freed.allocated == 1);
 }
 
-void freeRandPtr(){
+static void freeRandPtr(){
     log_string ("$bFreeing a NULL and random pointer$d\n");
 
     chunkListDump(&allocated, ALL, true);
@@ -155,7 +155,7 @@ void freeRandPtr(){
 
 #ifndef NDEBUG
 
-void corruption(){
+static void corruption(){
     log_string ("$bCorruption test$d\n");
     IF_DBG (regionVerify();)
 
@@ -210,7 +210,7 @@ void corruption(){
     log_string ("\n$gTEST PASSED$d\n\n");
 }
 
-void clcorruption(){
+static void clcorruption(){
     log_string ("$bCL Corruption test$d\n");
     IF_DBG (regionVerify();)
 
@@ -225,8 +225,8 @@ void clcorruption(){
     allocated.allocated = 0;
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
 
-    void* a = memalloc(16);
-    void* b = memalloc(16);
+    uintptr_t* a = (uintptr_t*)memalloc(16);
+    uintptr_t* b = (uintptr_t*)memalloc(16);
 
     log_string ("\n$yChunks unsorted$d\n");
     Chunk buffer = allocated.chunks[0];
@@ -241,7 +241,7 @@ void clcorruption(){
     allocated.chunks[1].ptr = a; 
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
     allocated.allocated = 0;
-    allocated.chunks[1].ptr = (uintptr_t*)b - 1;
+    allocated.chunks[1].ptr = b - 1;
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
 
     memfree(a);
@@ -264,7 +264,7 @@ int main(int argc, char** argv){
     Memory[WORDCAP-1] = (uintptr_t)(Memory + WORDCAP) ^ HEXSPEAK;
     )
 
-    char* fname = (argc == 2) ? argv[1] : "stdout";
+    const char* fname = (argc == 2) ? argv[1] : "stdout";
     log_start (fname);
 
     overWordCap();
