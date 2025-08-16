@@ -3,7 +3,7 @@
 #include "allocator/memory.h"
 
 static void overWordCap(){
-    log_string ("$bAllocating more than WORDCAP(%lu)$d\n", WORDCAP);
+    log_string ("<blu>Allocating more than WORDCAP(%lu)<dft>\n", WORDCAP);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -17,13 +17,13 @@ static void overWordCap(){
     log_string ("We are almost out of memory (Word(s) used: %zu)\n", allocated.words);
 
     void* bigptr = memalloc(MEMORYCAP);
-    log_string ("\n$yAllocating %d byte(s)$d\npointer returned: %p\n\n", MEMORYCAP, bigptr);
+    log_string ("\n<ylw>Allocating %d byte(s)<dft>\npointer returned: %p\n\n", MEMORYCAP, bigptr);
     assert(!bigptr);
 
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    log_string ("$gCleanning$d\n");
+    log_string ("<grn>Cleanning<dft>\n");
     memfree(bigptr);
     memfree(ptr);
     chunkListDump(&allocated, ALL, true);
@@ -31,11 +31,11 @@ static void overWordCap(){
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 static void overChunkCap(){
-    log_string ("$bAllocating more than CHUNKCAP(%d)$d\n", CHUNKCAP);
+    log_string ("<blu>Allocating more than CHUNKCAP(%d)<dft>\n", CHUNKCAP);
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -50,7 +50,7 @@ static void overChunkCap(){
     chunkListDump(&freed, FIRSNLAST, false);
     assert(allocated.allocated==CHUNKCAP);
 
-    log_string ("\n$yAllocating another one$d\n");
+    log_string ("\n<ylw>Allocating another one<dft>\n");
     char* nextptr = (char*)memalloc(sizeof(char));
     log_string ("pointer returned: %p\n\n", nextptr);
     assert(!nextptr);
@@ -59,7 +59,7 @@ static void overChunkCap(){
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    log_string ("$gCleanning$d\n");
+    log_string ("<grn>Cleanning<dft>\n");
     for(int i=0; i<CHUNKCAP; i++){
         memfree(ptrs[i]);
     }
@@ -68,11 +68,11 @@ static void overChunkCap(){
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 static void fragmentationTest(){
-    log_string ("$bFragmentation test$d\n");
+    log_string ("<blu>Fragmentation test<dft>\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
@@ -86,7 +86,7 @@ static void fragmentationTest(){
     chunkListDump(&allocated, FIRSNLAST, false);
     chunkListDump(&freed, FIRSNLAST, false);
 
-    log_string ("\n$yDeallocating every second ptr$d\n");
+    log_string ("\n<ylw>Deallocating every second ptr<dft>\n");
     for(int i=0; i<CHUNKCAP; i+=2){
         memfree(ptrs[i]);
     }
@@ -95,7 +95,7 @@ static void fragmentationTest(){
     assert(allocated.allocated == CHUNKCAP/2);
 
 
-    log_string ("$gCleanning$d\n");
+    log_string ("<grn>Cleanning<dft>\n");
     for(int i=0; i<CHUNKCAP; i++){
         memfree(ptrs[i]);
     }
@@ -104,18 +104,18 @@ static void fragmentationTest(){
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 static void zeroSize(){
-    log_string ("$bAllocating 0 bytes$d\n");
+    log_string ("<blu>Allocating 0 bytes<dft>\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$yAllocating: memalloc(0)$d\n");
+    log_string ("\n<ylw>Allocating: memalloc(0)<dft>\n");
     void* ptr = memalloc(0);
     log_string ("returned: %p\n", ptr);
     
@@ -126,14 +126,14 @@ static void zeroSize(){
 }
 
 static void freeRandPtr(){
-    log_string ("$bFreeing a NULL and random pointer$d\n");
+    log_string ("<blu>Freeing a NULL and random pointer<dft>\n");
 
     chunkListDump(&allocated, ALL, true);
     chunkListDump(&freed, ALL, false);
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$yDeallocating NULL$d\n");
+    log_string ("\n<ylw>Deallocating NULL<dft>\n");
     memfree(NULL);
 
     chunkListDump(&allocated, ALL, true);
@@ -142,7 +142,7 @@ static void freeRandPtr(){
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
     void* ptr = malloc(64);
-    log_string ("\n$yfreeing random pointer:$d %p\n", ptr);
+    log_string ("\n<ylw>freeing random pointer:<dft> %p\n", ptr);
     memfree(ptr);
 
     chunkListDump(&allocated, ALL, true);
@@ -150,19 +150,19 @@ static void freeRandPtr(){
     IF_DBG (regionVerify();)
     assert(allocated.allocated == 0 && freed.allocated == 1);
 
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 #ifndef NDEBUG
 
 static void corruption(){
-    log_string ("$bCorruption test$d\n");
+    log_string ("<blu>Corruption test<dft>\n");
     IF_DBG (regionVerify();)
 
-    log_string ("\n$yNULL ptr as a chunk*$d\n");
+    log_string ("\n<ylw>NULL ptr as a chunk*<dft>\n");
     log_string ("errCode: %llu\n", chunkVerify(NULL));
 
-    log_string ("\n$yChunk out of bounds$d\n");
+    log_string ("\n<ylw>Chunk out of bounds<dft>\n");
     Chunk* outofbounds = (Chunk*)malloc(sizeof(Chunk));
     outofbounds->signature = HEXSPEAK;
     outofbounds->ptr = Memory - 10;
@@ -180,23 +180,23 @@ static void corruption(){
     log_string ("errCode: %llu\n", chunkVerify(outofbounds));
     free(outofbounds);
 
-    log_string ("\n$yChunk::ptr pointing something else, or first 8 bytes of allocated memory is corrupted$d\n");
+    log_string ("\n<ylw>Chunk::ptr pointing something else, or first 8 bytes of allocated memory is corrupted<dft>\n");
     void* ptr = memalloc(16);
     Chunk* corrupted = &allocated.chunks[0];
-    log_string ("\n$yCorrupted ptr$d\n");
+    log_string ("\n<ylw>Corrupted ptr<dft>\n");
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
     corrupted->ptr += 1;
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
     corrupted->ptr -= 1;
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
-    log_string ("\n$yCorrupted first 8 bytes$d\n");
+    log_string ("\n<ylw>Corrupted first 8 bytes<dft>\n");
     *corrupted->ptr += 1;
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
     *corrupted->ptr -= 1;
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
     memfree(ptr);
 
-    log_string ("\n$yChunk has a 0 size$d\n");
+    log_string ("\n<ylw>Chunk has a 0 size<dft>\n");
     ptr = memalloc(16);
     corrupted = &allocated.chunks[0];
     log_string ("errCode: %llu\n", chunkVerify(corrupted));
@@ -207,19 +207,19 @@ static void corruption(){
     memfree(ptr);
 
     IF_DBG (regionVerify();)
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 static void clcorruption(){
-    log_string ("$bCL Corruption test$d\n");
+    log_string ("<blu>CL Corruption test<dft>\n");
     IF_DBG (regionVerify();)
 
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
 
-    log_string ("\n$yNULL ptr as a ChunkList*$d\n");
+    log_string ("\n<ylw>NULL ptr as a ChunkList*<dft>\n");
     log_string ("errCode: %llu\n", chunkListVerify(NULL));
 
-    log_string ("\n$yAllocated more than allowed$d\n");
+    log_string ("\n<ylw>Allocated more than allowed<dft>\n");
     allocated.allocated = CHUNKCAP * 2;
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
     allocated.allocated = 0;
@@ -228,7 +228,7 @@ static void clcorruption(){
     uintptr_t* a = (uintptr_t*)memalloc(16);
     uintptr_t* b = (uintptr_t*)memalloc(16);
 
-    log_string ("\n$yChunks unsorted$d\n");
+    log_string ("\n<ylw>Chunks unsorted<dft>\n");
     Chunk buffer = allocated.chunks[0];
     allocated.chunks[0] = allocated.chunks[1];
     allocated.chunks[1] = buffer;
@@ -237,7 +237,7 @@ static void clcorruption(){
     allocated.chunks[0] = buffer;
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
 
-    log_string ("\n$yChunks are clipping$d\n");
+    log_string ("\n<ylw>Chunks are clipping<dft>\n");
     allocated.chunks[1].ptr = a; 
     log_string ("errCode: %llu\n", chunkListVerify(&allocated));
     allocated.allocated = 0;
@@ -251,7 +251,7 @@ static void clcorruption(){
     chunkListDump(&freed, ALL, false);
 
     IF_DBG (regionVerify();)
-    log_string ("\n$gTEST PASSED$d\n\n");
+    log_string ("\n<grn>TEST PASSED<dft>\n\n");
 }
 
 #endif
@@ -280,7 +280,7 @@ int main(int argc, char** argv){
     
     #endif
 
-    log_string ("\n$gALL TESTS PASSED$d\n");
+    log_string ("\n<grn>ALL TESTS PASSED<dft>\n");
 
     return 0;
 }

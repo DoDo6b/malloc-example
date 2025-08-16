@@ -1,13 +1,13 @@
 #include "logger.h"
 
 
-char LogFile[NAME_MAX] = "";
-FILE* LogStream = NULL;
-static char Buffer[BUFSIZ] = "";
+static char LogFile[NAME_MAX] = "";
+static FILE* LogStream = NULL;
 
 
 FILE* log_start (const char* fname)
 {
+    if (!fname) print_stderr ("syntax error", "can't open stream");
     FILE* buffer = NULL;
     if      (!strncmp(fname, "stdout", NAME_MAX))   LogStream = stdout;
     else if (!strncmp(fname, "stderr", NAME_MAX))   LogStream = stderr;
@@ -16,93 +16,132 @@ FILE* log_start (const char* fname)
         buffer = fopen (fname, "a");
         if (!buffer)
         {
-            fprintf
-            (
-                stderr,
-                "%s:%d: %s:" ESC_BOLD ESC_RED "fopen error:" ESC_DEFAULT " fopen returned a NULL" ESC_BOLD_CLOSE "\n",
-                __FILE__,
-                __LINE__,
-                __func__
-            );
+            print_stderr("internal error", "fopen returned a NULL");
             return NULL;
         }
         LogStream = buffer;
 
         atexit (log_close);
+
+        fprintf (LogStream, "<pre>\n");
     }
 
     strncpy (LogFile, fname, NAME_MAX);
 
-    fprintf (LogStream, "<pre>\n");
     return LogStream;
 }
 
-#define PRINT_SPEC_(spec) fprintf(LogStream, ( (LogStream == stdout || LogStream == stderr) ? ESC_ ## spec : HTML_ ## spec) )
+
+static unsigned long djb2Hash (const char* str)
+{
+    if (!str)
+    {
+        print_stderr ("internal error", "can't get hash(NULL received)\n");
+        return 0;
+    }
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++))
+    {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
+}
+
+
+enum SPECS_
+{
+    RESET        = 177655,      // <R>
+    BOLD         = 177671,      // <b>
+    BOLD_CLOSE   = 5861558,     // </b>
+    ITALIC       = 177678,      // <i>
+    ITALIC_CLOSE = 5861565,     // </i>
+
+    BLACK        = 193487390,   // <blk>
+    RED          = 193504576,   // <red>
+    GREEN        = 193493036,   // <grn>
+    YELLOW       = 193512449,   // <ylw>
+    BLUE         = 193487400,   // <blu>
+    MAGENTA      = 193499207,   // <mgn>
+    CYAN         = 193488911,   // <cyn>
+    WHITE        = 193510136,   // <wht>
+    DEFAULT      = 193489379,   // <dft>
+};
+
+#define CASE_SPEC_(spec) case spec: fprintf(LogStream, ( (LogStream == stdout || LogStream == stderr) ? ESC_ ## spec : HTML_ ## spec) ); break
+
+static void print_spec (const char* spec)
+{
+    assert (spec);
+    switch (djb2Hash (spec))
+        {
+            CASE_SPEC_(RESET);
+            CASE_SPEC_(BOLD);
+            CASE_SPEC_(BOLD_CLOSE);
+            CASE_SPEC_(ITALIC);
+            CASE_SPEC_(ITALIC_CLOSE);
+            CASE_SPEC_(BLACK);
+            CASE_SPEC_(RED);
+            CASE_SPEC_(GREEN);
+            CASE_SPEC_(YELLOW);
+            CASE_SPEC_(BLUE);
+            CASE_SPEC_(CYAN);
+            CASE_SPEC_(MAGENTA);
+            CASE_SPEC_(WHITE);
+            CASE_SPEC_(DEFAULT);
+
+            default:    fprintf(LogStream, "%c%s%c", SPEC_OPEN, spec, SPEC_CLOSE);
+        }
+}
+
+#undef CASE_SPEC_
+
+static size_t parse_spec (const char* substr)
+{
+    assert (substr && *substr == SPEC_OPEN);
+    size_t collected = 0;
+
+    substr++;
+    char buffer[BUFSIZ] = "";
+
+    for (collected = 0; *substr != '\0' && *substr != SPEC_CLOSE && collected < sizeof(buffer); collected++, substr++) buffer[collected] = *substr;
+    collected += 2;
+
+    print_spec (buffer);
+
+    return collected;
+}
 
 int log_string (const char* format, ...)
 {
-    if (format[0] == '\0') return 0;
     if (!LogStream)
     {
-        fprintf
-        (
-            stderr,
-            "%s:%d: %s:" ESC_BOLD ESC_RED "error:" ESC_DEFAULT " LogStream wasn't open, call log_start()" ESC_BOLD_CLOSE "\n",
-            __FILE__,
-            __LINE__,
-            __func__
-        );
+        print_stderr("init error", "LogStream wasn't open, call log_start()");
         return -1;
     }
+    if (!format) return 0;
 
     va_list args;
     va_start (args, format);
 
+    char Buffer[BUFSIZ] = "";
     vsprintf (Buffer, format, args);
 
     va_end (args);
 
     size_t printed = 0;
-    for (printed = 0; Buffer[printed] != '\0' && printed < sizeof(Buffer); printed++)
+    for (  printed = 0; Buffer[printed] != '\0' && printed < sizeof(Buffer); printed++)
     {
-        if (Buffer[printed] == SPECIFICATOR)
-        {
-            switch (Buffer[++printed])
-            {
-                case SPEC_RST:  PRINT_SPEC_(RESET);     break;
-                case SPEC_BLD:  PRINT_SPEC_(BOLD);      break;
-                case SPEC_ITA:  PRINT_SPEC_(ITALIC);    break;
-                case SPEC_BLK:  PRINT_SPEC_(BLACK);     break;
-                case SPEC_RED:  PRINT_SPEC_(RED);       break;
-                case SPEC_GRN:  PRINT_SPEC_(GREEN);     break;
-                case SPEC_YLW:  PRINT_SPEC_(YELLOW);    break;
-                case SPEC_BLU:  PRINT_SPEC_(BLUE);      break;
-                case SPEC_CYN:  PRINT_SPEC_(CYAN);      break;
-                case SPEC_MGN:  PRINT_SPEC_(MAGENTA);   break;
-                case SPEC_WHT:  PRINT_SPEC_(WHITE);     break;
-                case SPEC_DFT:  PRINT_SPEC_(DEFAULT);   break;
-
-                case SPEC_CLOSE:
-                    switch (Buffer[++printed])
-                    {
-                        case SPEC_BLD:  PRINT_SPEC_(BOLD_CLOSE);      break;
-                        case SPEC_ITA:  PRINT_SPEC_(ITALIC_CLOSE);    break;
-
-                        default:        fprintf(LogStream, "%c%c%c", SPECIFICATOR, SPEC_CLOSE, Buffer[printed]);
-                    }
-                    break;
-
-                default:    fprintf(LogStream, "%c%c", SPECIFICATOR, Buffer[printed]);
-            }
-        }
-        else fprintf(LogStream, "%c", Buffer[printed]);
+        if (Buffer[printed] == SPEC_OPEN)   printed += parse_spec(&Buffer[printed]) - 1;
+        else                                           fprintf(LogStream, "%c", Buffer[printed]);
     }
 
     if (LogStream != stderr || LogStream != stdout) fflush (LogStream);
     return (int)printed;
 }
 
-#undef PRINT_SPEC_
 
 void log_close()
 {

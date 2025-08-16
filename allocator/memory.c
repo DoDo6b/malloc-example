@@ -115,19 +115,19 @@ void memDump (const void* pointer, size_t words)
     log_string ("  Memory dump of %p(%zu byte(s))\n", pointer, byteSize);
     log_string ("  {\n    ");
     
-    log_string ("$x");
+    log_string ("<blk>");
     for (size_t i = 0; i < byteSize; i++)
     {
         log_string ("%02zx ", i);
     }
-    log_string ("$d\n    $c");
+    log_string ("<dft>\n    <cyn>");
 
     for (size_t i=0; i < byteSize; i++)
     {
         log_string ("%02x ", *(ptr+i));
     }
         
-    log_string ("$d\n  }\n");
+    log_string ("<dft>\n  }\n");
 }
 
 void chunkDump_ (const char* callerFile, unsigned int callerLine, const Chunk* chunk, bool bytesDump)
@@ -138,7 +138,7 @@ void chunkDump_ (const char* callerFile, unsigned int callerLine, const Chunk* c
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk failed verification$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk failed verification</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -150,7 +150,7 @@ void chunkDump_ (const char* callerFile, unsigned int callerLine, const Chunk* c
 
     if (chunk == NULL)
     {
-        log_string ("%s:%d: %s: $#$rverification error:$d received a NULL$/#\n", callerFile, callerLine, __func__);
+        log_string ("%s:%d: %s: <b><red>verification error:<dft> received a NULL</b>\n", callerFile, callerLine, __func__);
         IF_SAFE(exit(EXIT_FAILURE);)
     }
 
@@ -178,7 +178,7 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d ChunkList failed verification$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> ChunkList failed verification</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -190,7 +190,7 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
 
     if (list == NULL)
     {
-        log_string ("%s:%d: %s: $#$rverification error:$d received a NULL$/#\n", callerFile, callerLine, __func__);
+        log_string ("%s:%d: %s: <b><red>verification error:<dft> received a NULL</b>\n", callerFile, callerLine, __func__);
         IF_SAFE(exit(EXIT_FAILURE);)
     }
 
@@ -200,7 +200,7 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
 
     if (list->allocated==0)
     {
-        log_string ("  $*Empty$/*\n");
+        log_string ("  <i>Empty</i>\n");
         log_string ("}\n");
         return;
     }
@@ -208,7 +208,7 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
     switch (showMode)
     {
     case HIDE:
-        log_string ("  $*Chunks are hidden$/*\n");
+        log_string ("  <i>Chunks are hidden</i>\n");
         break;
 
     case FIRSNLAST:
@@ -238,7 +238,7 @@ void chunkListDump_ (const char* callerFile, unsigned int callerLine, const char
         break;
 
     default:
-        log_string ("%s:%d: %s: $#$rsyntax error:$d inappropriate display mode$/#\n", callerFile, callerLine, __func__);
+        log_string ("%s:%d: %s: <b><red>syntax error:<dft> inappropriate display mode</b>\n", callerFile, callerLine, __func__);
         IF_SAFE(exit(EXIT_FAILURE);)
     }
     
@@ -257,7 +257,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d received a NULL$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> received a NULL</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -265,7 +265,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
         error_accum = error_accum | ERRCODE_NULL;
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -277,7 +277,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d received pointer doesn't point to the Chunk (Chunk signatures is corrupted)$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> received pointer doesn't point to the Chunk (Chunk signatures is corrupted)</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -285,7 +285,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
         error_accum = error_accum | ERRCODE_CH_SIGN;
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -297,7 +297,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk::ptr doesn’t belong to a region$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk::ptr doesn’t belong to a region</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -308,7 +308,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk::size is 2 word(s) (0 in Release build)$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk::size is 2 word(s) (0 in Release build)</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -319,7 +319,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk::size is too big (chunk crosses the memory boundary)$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk::size is too big (chunk crosses the memory boundary)</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -330,7 +330,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk::ptr has been changed (memory header is different)$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk::ptr has been changed (memory header is different)</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -342,7 +342,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d Chunk::size has been changed (memory header is different)$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> Chunk::size has been changed (memory header is different)</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -355,7 +355,7 @@ uint64_t chunkVerify_ (const char* callerFile, unsigned int callerLine, const Ch
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -373,7 +373,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d received a NULL$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> received a NULL</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -381,7 +381,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
         error_accum = error_accum | ERRCODE_NULL;
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -393,7 +393,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d ChunkList signatures is corrupted$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> ChunkList signatures is corrupted</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -401,7 +401,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
         error_accum = error_accum | ERRCODE_CL_SIGN;
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -415,7 +415,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
         {
             log_string
             (
-                "%s:%d: %s: $#$rverification error:$d ChunkList::allocated > CHUNKCAP (chunk lost)$/#\n",
+                "%s:%d: %s: <b><red>verification error:<dft> ChunkList::allocated > CHUNKCAP (chunk lost)</b>\n",
                 callerFile,
                 callerLine,
                 __func__
@@ -423,7 +423,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
             error_accum = error_accum | ERRCODE_CL_ALLOCATED;
             log_string
             (
-                "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+                "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
                 callerFile,
                 callerLine,
                 __func__,
@@ -440,7 +440,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
             {
                 log_string
                 (
-                    "%s:%d: %s: $#$rverification error:$d Chunk[%zu] failed verification$/#\n",
+                    "%s:%d: %s: <b><red>verification error:<dft> Chunk[%zu] failed verification</b>\n",
                     callerFile,
                     callerLine,
                     __func__,
@@ -457,7 +457,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
                     {
                         log_string
                         (
-                            "%s:%d: %s: $#$rverification error:$d ChunkList is unsorted$/#\n",
+                            "%s:%d: %s: <b><red>verification error:<dft> ChunkList is unsorted</b>\n",
                             callerFile,
                             callerLine,
                             __func__
@@ -468,7 +468,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
                     {
                         log_string
                         (
-                            "%s:%d: %s: $#$rverification error:$d Chunks [%zu] and [%zu] overlapping each other$/#\n",
+                            "%s:%d: %s: <b><red>verification error:<dft> Chunks [%zu] and [%zu] overlapping each other</b>\n",
                             callerFile,
                             callerLine,
                             __func__,
@@ -484,7 +484,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
         {
             log_string
             (
-                "%s:%d: %s: $#$rverification error:$d memory leak$/#\n",
+                "%s:%d: %s: <b><red>verification error:<dft> memory leak</b>\n",
                 callerFile,
                 callerLine,
                 __func__
@@ -498,7 +498,7 @@ uint64_t chunkListVerify_ (const char* callerFile, unsigned int callerLine, cons
     {
         log_string
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
@@ -517,7 +517,7 @@ uint64_t regionVerify_ (const char* callerFile, unsigned int callerLine)
     {
         log_string 
         (
-            "%s:%d: %s: $#$rverification error:$d memory leak detected$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> memory leak detected</b>\n",
             callerFile,
             callerLine,
             __func__
@@ -529,7 +529,7 @@ uint64_t regionVerify_ (const char* callerFile, unsigned int callerLine)
     {
         log_string 
         (
-            "%s:%d: %s: $#$rverification error:$d verification failed with code: %llu$/#\n",
+            "%s:%d: %s: <b><red>verification error:<dft> verification failed with code: %llu</b>\n",
             callerFile,
             callerLine,
             __func__,
